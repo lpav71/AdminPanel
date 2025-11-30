@@ -40,9 +40,62 @@
                     rememberLastDir : false,
                     height: 300,
                     defaultView: 'list',
-                    getFileCallback: function (file) {
-                        window.parent.processSelectedFile(file, '{{ $input_id }}');
-                        console.log(file);
+                    getFileCallback: function (file, fm) {
+                        console.log('getFileCallback called', file, fm);
+                        try {
+                            // Определяем родительское окно (для window.open используем opener, для iframe - parent)
+                            var parentWindow = window.opener || window.parent;
+                            
+                            if (!parentWindow) {
+                                console.error('Родительское окно не доступно');
+                                return;
+                            }
+                            
+                            console.log('Checking processSelectedFile in parent window:', typeof parentWindow.processSelectedFile);
+                            
+                            if (typeof parentWindow.processSelectedFile !== 'function') {
+                                console.error('processSelectedFile function not found in parent window');
+                                console.log('Available in parentWindow:', Object.keys(parentWindow).slice(0, 20));
+                                return;
+                            }
+                            
+                            // Получаем URL файла
+                            var fileUrl = '';
+                            
+                            if (file && file.url) {
+                                // Используем URL из объекта файла
+                                // Если есть fm, нормализуем URL
+                                if (fm && typeof fm.convAbsUrl === 'function') {
+                                    fileUrl = fm.convAbsUrl(file.url);
+                                } else {
+                                    fileUrl = file.url;
+                                }
+                            } else if (file && typeof file === 'string') {
+                                fileUrl = file;
+                            } else {
+                                console.error('Не удалось получить URL файла', file);
+                                return;
+                            }
+                            
+                            console.log('Calling processSelectedFile with:', fileUrl, '{{ $input_id }}');
+                            
+                            // Вызываем функцию в родительском окне
+                            parentWindow.processSelectedFile(fileUrl, '{{ $input_id }}');
+                            
+                            // Закрываем окно popup с задержкой, чтобы дать время выполниться функции
+                            setTimeout(function() {
+                                try {
+                                    if (window.opener) {
+                                        window.close();
+                                    }
+                                } catch (e) {
+                                    console.error('Ошибка при закрытии окна:', e);
+                                }
+                            }, 200);
+                        } catch (error) {
+                            console.error('Ошибка в getFileCallback:', error);
+                            alert('Ошибка при выборе файла: ' + error.message);
+                        }
                     },
                     uiOptions : {
                         // toolbar configuration

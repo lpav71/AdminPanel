@@ -10,7 +10,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="/admin/plugins/fontawesome-free/css/all.min.css">
     <!-- Ionicons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ionicons@2.0.1/dist/css/ionicons.min.css">
     <!-- Tempusdominus Bootstrap 4 -->
     <link rel="stylesheet" href="/admin/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
     <!-- iCheck -->
@@ -24,7 +24,6 @@
     <!-- Daterange picker -->
     <link rel="stylesheet" href="/admin/plugins/daterangepicker/daterangepicker.css">
     <!-- НУЖНО -->
-    <link href="/admin/dist/css/colorbox.css" rel="stylesheet">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -172,5 +171,54 @@
 <script type="text/javascript" src="/packages/barryvdh/elfinder/js/standalonepopup.js"></script>
 <!-- Наш скрипт) -->
 <script src="/admin/admin.js"></script>
+
+<!-- Глобальная функция для elFinder -->
+<script>
+    // Глобальная функция для обработки выбранного файла из elFinder
+    // Определяем в нескольких местах для надежности
+    if (typeof window.processSelectedFile === 'undefined') {
+        window.processSelectedFile = function(filePath, requestingField) {
+        try {
+            // Если передан объект вместо строки, извлекаем путь
+            if (typeof filePath === 'object' && filePath !== null) {
+                filePath = filePath.path || filePath.url || filePath.hash || '';
+            }
+            
+            // Преобразуем в строку на случай, если это не строка
+            filePath = String(filePath || '');
+            
+            // Добавляем слеш в начало пути, если его нет
+            var fileUrl = filePath.startsWith('/') ? filePath : '/' + filePath;
+            
+            // Устанавливаем значение в поле ввода
+            var $input = $('#' + requestingField);
+            if ($input.length) {
+                $input.val(fileUrl).trigger('change');
+            }
+            
+            // Обновляем превью изображения
+            var imgPreview = document.querySelector('#' + requestingField + ' ~ #image_preview img');
+            var previewContainer = document.querySelector('#' + requestingField + ' ~ #image_preview');
+            if (imgPreview && previewContainer) {
+                imgPreview.src = fileUrl;
+                previewContainer.style.display = 'block';
+            }
+            
+            // Закрываем окно elFinder (если это popup)
+            if (window.opener) {
+                window.close();
+            }
+        } catch (error) {
+            console.error('Error in processSelectedFile:', error);
+            alert('Ошибка при выборе файла: ' + error.message);
+        }
+    };
+    }
+    
+    // Также определяем в глобальной области для надежности
+    if (typeof processSelectedFile === 'undefined') {
+        processSelectedFile = window.processSelectedFile;
+    }
+</script>
 </body>
 </html>

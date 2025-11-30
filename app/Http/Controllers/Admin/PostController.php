@@ -40,6 +40,13 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'img' => 'required|string',
+            'text' => 'required|string',
+            'categories_id' => 'required|exists:categories,id'
+        ]);
+
         $post = new Post();
         $post->title = $request->title;
         $post->img = $request->img;
@@ -81,12 +88,19 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'img' => 'required|string',
+            'text' => 'required|string',
+            'categories_id' => 'required|exists:categories,id'
+        ]);
 
         $post->title = $request->title;
         $post->img = $request->img;
         $post->text = $request->text;
         $post->categories_id = $request->categories_id;
-        return redirect()->back()->withSuccess('Статья успешно добавлена');
+        $post->save();
+        return redirect()->back()->withSuccess('Статья успешно обновлена');
     }
 
     /**

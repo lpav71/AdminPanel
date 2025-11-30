@@ -15,6 +15,17 @@ $(document).ready(function () {
             return false;
         }
     });
+
+    // Простой обработчик для elFinder без Colorbox
+    $('.popup_selector').on('click', function (e) {
+        e.preventDefault();
+        var inputId = $(this).data('inputid');
+        var elfinderUrl = '/elfinder/popup/' + inputId;
+        
+        // Открываем в новом окне вместо Colorbox
+        window.open(elfinderUrl, 'elfinder', 'width=900,height=600,scrollbars=yes');
+        return false;
+    });
 })
 
 ClassicEditor
